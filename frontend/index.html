@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certificate Verification System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+      }
+
+      header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+        animation: float 20s infinite linear;
+      }
+
+      @keyframes float {
+        0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
+        100% { transform: translateX(-50%) translateY(-50%) rotate(360deg); }
+      }
+
+      header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+      }
+
+      header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+      }
+
+      .main-content {
+        padding: 40px 30px;
+      }
+
+      .section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .section h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .section h2 i {
+        color: #4facfe;
+      }
+
+      .file-upload {
+        border: 2px dashed #ddd;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+        background: #fafafa;
+      }
+
+      .file-upload:hover {
+        border-color: #4facfe;
+        background: #f0f8ff;
+      }
+
+      .file-upload.dragover {
+        border-color: #4facfe;
+        background: #e6f7ff;
+        transform: scale(1.02);
+      }
+
+      .file-upload input[type="file"] {
+        display: none;
+      }
+
+      .file-upload label {
+        cursor: pointer;
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      .file-upload label i {
+        font-size: 2rem;
+        color: #4facfe;
+        margin-bottom: 10px;
+      }
+
+      .file-info {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: #666;
+      }
+
+      .form-group {
+        margin: 20px 0;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #4facfe;
+        box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+      }
+
+      .btn {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .result {
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .result.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+      }
+
+      .result.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+      }
+
+      .result.info {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #4facfe;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .hash-display {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 15px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 0.8rem;
+        word-break: break-all;
+        color: #495057;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          margin: 10px;
+        }
+
+        header {
+          padding: 30px 20px;
+        }
+
+        header h1 {
+          font-size: 2rem;
+        }
+
+        .main-content {
+          padding: 20px 15px;
+        }
+
+        .section {
+          padding: 20px;
+        }
+
+        .file-upload {
+          padding: 30px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1><i class="fas fa-certificate"></i> Certificate Verification System</h1>
+        <p>Secure PDF-based certificate issuance and verification on the blockchain</p>
+      </header>
+
+      <div class="main-content">
+        <section class="section">
+          <h2><i class="fas fa-upload"></i> 1) Upload Certificate PDF</h2>
+          <p>Upload your certificate PDF file. The system will generate a unique hash for blockchain storage.</p>
+          <div class="file-upload" id="uploadArea">
+            <input type="file" id="certificateFile" accept=".pdf" />
+            <label for="certificateFile">
+              <i class="fas fa-cloud-upload-alt"></i><br>
+              Click to upload PDF or drag and drop
+            </label>
+            <div class="file-info" id="fileInfo">No file selected</div>
+          </div>
+          <button id="generateHash" class="btn" disabled>
+            <i class="fas fa-hashtag"></i> Generate Hash
+          </button>
+          <div id="hashResult" class="result info" style="display: none;">
+            <strong>Generated Hash:</strong>
+            <div class="hash-display" id="generatedHash"></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2><i class="fas fa-plus-circle"></i> 2) Issue Certificate</h2>
+          <p>Store the certificate hash on the blockchain with recipient information.</p>
+          <div class="form-group">
+            <label for="recipientName"><i class="fas fa-user"></i> Recipient Name</label>
+            <input id="recipientName" type="text" placeholder="Enter recipient name" />
+          </div>
+          <div class="form-group">
+            <label for="course"><i class="fas fa-graduation-cap"></i> Course/Program</label>
+            <input id="course" type="text" placeholder="Enter course or program name" />
+          </div>
+          <button id="issue" class="btn" disabled>
+            <i class="fas fa-paper-plane"></i> Issue Certificate
+          </button>
+          <div id="issueResult" class="result" style="display: none;"></div>
+        </section>
+
+        <section class="section">
+          <h2><i class="fas fa-search"></i> 3) Verify Certificate</h2>
+          <p>Upload the certificate PDF again to verify its authenticity against the blockchain.</p>
+          <div class="file-upload" id="verifyUploadArea">
+            <input type="file" id="verifyFile" accept=".pdf" />
+            <label for="verifyFile">
+              <i class="fas fa-search"></i><br>
+              Upload PDF to verify
+            </label>
+            <div class="file-info" id="verifyFileInfo">No file selected</div>
+          </div>
+          <button id="verify" class="btn" disabled>
+            <i class="fas fa-check-circle"></i> Verify Certificate
+          </button>
+          <div id="verifyResult" class="result" style="display: none;"></div>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.min.js"></script>
+    <script>
+      const apiBase = "http://localhost:4000";
+
+      // File upload elements
+      const certificateFile = document.getElementById("certificateFile");
+      const uploadArea = document.getElementById("uploadArea");
+      const fileInfo = document.getElementById("fileInfo");
+      const generateHashBtn = document.getElementById("generateHash");
+      const hashResult = document.getElementById("hashResult");
+      const generatedHash = document.getElementById("generatedHash");
+
+      // Issue elements
+      const recipientName = document.getElementById("recipientName");
+      const course = document.getElementById("course");
+      const issueBtn = document.getElementById("issue");
+      const issueResult = document.getElementById("issueResult");
+
+      // Verify elements
+      const verifyFile = document.getElementById("verifyFile");
+      const verifyUploadArea = document.getElementById("verifyUploadArea");
+      const verifyFileInfo = document.getElementById("verifyFileInfo");
+      const verifyBtn = document.getElementById("verify");
+      const verifyResult = document.getElementById("verifyResult");
+
+      let currentCertificateHash = null;
+      let uploadedFile = null;
+      let verifyUploadedFile = null;
+
+      // Utility functions
+      function showResult(container, type, message) {
+        container.className = `result ${type}`;
+        container.innerHTML = message;
+        container.style.display = "block";
+      }
+
+      function showLoading(button, text = "Processing...") {
+        button.disabled = true;
+        button.innerHTML = `<span class="loading"></span> ${text}`;
+      }
+
+      function hideLoading(button, originalText) {
+        button.disabled = false;
+        button.innerHTML = originalText;
+      }
+
+      async function hashFile(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return '0x' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+
+      // File upload handling
+      function handleFileSelect(fileInput, fileInfo, button, isVerify = false) {
+        const file = fileInput.files[0];
+        if (file) {
+          if (file.type !== 'application/pdf') {
+            showResult(isVerify ? verifyResult : hashResult, 'error', 'Please select a PDF file only.');
+            fileInput.value = '';
+            return;
+          }
+
+          if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            showResult(isVerify ? verifyResult : hashResult, 'error', 'File size must be less than 10MB.');
+            fileInput.value = '';
+            return;
+          }
+
+          fileInfo.textContent = `${file.name} (${formatFileSize(file.size)})`;
+          button.disabled = false;
+
+          if (isVerify) {
+            verifyUploadedFile = file;
+          } else {
+            uploadedFile = file;
+          }
+        } else {
+          fileInfo.textContent = 'No file selected';
+          button.disabled = true;
+          if (isVerify) {
+            verifyUploadedFile = null;
+          } else {
+            uploadedFile = null;
+          }
+        }
+      }
+
+      // Drag and drop functionality
+      function setupDragAndDrop(dropArea, fileInput, fileInfo, button, isVerify = false) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+          dropArea.classList.add('dragover');
+        }
+
+        function unhighlight() {
+          dropArea.classList.remove('dragover');
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+
+          if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect(fileInput, fileInfo, button, isVerify);
+          }
+        }
+      }
+
+      // Event listeners
+      certificateFile.addEventListener("change", () => {
+        handleFileSelect(certificateFile, fileInfo, generateHashBtn, false);
+      });
+
+      verifyFile.addEventListener("change", () => {
+        handleFileSelect(verifyFile, verifyFileInfo, verifyBtn, true);
+      });
+
+      setupDragAndDrop(uploadArea, certificateFile, fileInfo, generateHashBtn, false);
+      setupDragAndDrop(verifyUploadArea, verifyFile, verifyFileInfo, verifyBtn, true);
+
+      // Generate hash from PDF
+      generateHashBtn.addEventListener("click", async () => {
+        if (!uploadedFile) return;
+
+        showLoading(generateHashBtn, "Generating hash...");
+        try {
+          const hash = await hashFile(uploadedFile);
+          currentCertificateHash = hash;
+
+          generatedHash.textContent = hash;
+          hashResult.style.display = "block";
+          showResult(hashResult, 'success', `<strong>Hash Generated Successfully!</strong><div class="hash-display">${hash}</div>`);
+
+          // Enable issue button
+          issueBtn.disabled = false;
+        } catch (error) {
+          console.error('Error generating hash:', error);
+          showResult(hashResult, 'error', 'Error generating hash from PDF. Please try again.');
+        } finally {
+          hideLoading(generateHashBtn, '<i class="fas fa-hashtag"></i> Generate Hash');
+        }
+      });
+
+      // Issue certificate
+      issueBtn.addEventListener("click", async () => {
+        const recipient = recipientName.value.trim();
+        const courseValue = course.value.trim();
+
+        if (!currentCertificateHash || !recipient || !courseValue) {
+          showResult(issueResult, 'error', 'Please generate a hash and fill all fields first.');
+          return;
+        }
+
+        showLoading(issueBtn, "Issuing certificate...");
+        try {
+          const res = await fetch(`${apiBase}/issue`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              certificateHash: currentCertificateHash,
+              recipientName: recipient,
+              course: courseValue
+            }),
+          });
+
+          const json = await res.json();
+          if (json.success) {
+            showResult(issueResult, 'success',
+              `<strong>Certificate Issued Successfully!</strong><br>
+              Transaction Hash: <code>${json.txHash}</code><br>
+              Certificate hash has been stored on the blockchain.`);
+          } else {
+            showResult(issueResult, 'error', `Error: ${json.error}`);
+          }
+        } catch (error) {
+          console.error('Error issuing certificate:', error);
+          showResult(issueResult, 'error', 'Network error. Please check if the backend is running.');
+        } finally {
+          hideLoading(issueBtn, '<i class="fas fa-paper-plane"></i> Issue Certificate');
+        }
+      });
+
+      // Verify certificate
+      verifyBtn.addEventListener("click", async () => {
+        if (!verifyUploadedFile) return;
+
+        showLoading(verifyBtn, "Verifying certificate...");
+        try {
+          // Generate hash from uploaded verification file
+          const verifyHash = await hashFile(verifyUploadedFile);
+
+          const res = await fetch(`${apiBase}/verify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ certificateHash: verifyHash }),
+          });
+
+          const json = await res.json();
+          if (json.success && json.data.exists) {
+            showResult(verifyResult, 'success',
+              `<strong>Certificate Verified!</strong><br>
+              <i class="fas fa-check-circle"></i> This certificate is authentic and stored on the blockchain.<br>
+              <strong>Recipient:</strong> ${json.data.recipientName}<br>
+              <strong>Course:</strong> ${json.data.course}<br>
+              <strong>Issue Date:</strong> ${new Date(json.data.timestamp * 1000).toLocaleDateString()}`);
+          } else {
+            showResult(verifyResult, 'error',
+              `<strong>Certificate Not Found</strong><br>
+              <i class="fas fa-times-circle"></i> This certificate hash is not registered on the blockchain. The document may be counterfeit or altered.`);
+          }
+        } catch (error) {
+          console.error('Error verifying certificate:', error);
+          showResult(verifyResult, 'error', 'Network error. Please check if the backend is running.');
+        } finally {
+          hideLoading(verifyBtn, '<i class="fas fa-check-circle"></i> Verify Certificate');
+        }
+      });
+    </script>
+  </body>
+</html>
